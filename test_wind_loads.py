@@ -1,4 +1,4 @@
-import Project.wind_loads as wind_loads
+import wind_loads as wind_loads
 import pandas as pd
 
 def test_basic_wind_speed():

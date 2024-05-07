@@ -1,5 +1,5 @@
 import streamlit as st
-import Project.wind_loads as wind_loads
+import wind_loads as wind_loads
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
