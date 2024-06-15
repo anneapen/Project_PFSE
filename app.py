@@ -9,17 +9,9 @@ import numpy as np
 st.sidebar.header("**StructWind**")
 st.header("""**Wind Loads as per IS 875: Part-3:2015**""",)
 
-location_list=['Agra', 'Ahmedabad', 'Ajmer', 'Almora', 'Amritsar', 'Asansol', 'Aurangabad', 
-            'Bahraich', 'Barauni', 'Bengaluru', 'Bareilly', 'Bhatinda', 'Bhilai', 'Bhopal',
-            'Bhubaneshwar', 'Bhuj', 'Bikaner', 'Bokaro', 'Chandigarh', 'Chennai', 'Coimbatore', 
-            'Cuttack', 'Darbhanga', 'Darjeeling', 'Dehradun', 'Delhi', 'Durgapur', 'Gangtok', 
-            'Guwahati', 'Gaya', 'Gorakhpur', 'Hyderabad', 'Imphal', 'Jabalpur', 'Jaipur', 'Jamshedpur',
-            'Jhansi', 'Jodhpur', 'Kanpur', 'Kohima', 'Kolkata', 'Kozhikode', 'Kurnool', 'Lakshadeep', 
-            'Lucknow', 'Ludhiana', 'Madurai', 'Mandi', 'Mangalore', 'Moradabad', 'Mumbai', 'Mysore',
-            'Nagpur', 'Nainital', 'Nasik', 'Nellore', 'Panjim', 'Patiala', 'Patna', 'Puducherry', 
-            'Port Blaire', 'Pune', 'Raipur', 'Rajkot', 'Ranchi', 'Rourkee', 'Rourkela', 'Shimla', 
-            'Srinagar', 'Surat', 'Tiruchirapalli', 'Trivandrum', 'Udaipur', 'Vadodara', 'Varanasi', 
-            'Vijayawada', 'Vishakapatanam']
+vb_df=pd.read_csv("Basic wind speed.csv")
+vb_df=vb_df.set_index("Location")
+location_list = vb_df.index.tolist()
 
 structural_class_list=['General','Temporary structures','Structures with low risk','Important structures']
 terrain_category_list=['Category 1','Category 2','Category 3','Category 4']
@@ -83,42 +75,55 @@ with tab2:
 
    if ((height/min(lx,ly))>5 or (1/Tx)<1 or (1/Tx)<1):
       st.markdown("***Dynamic analysis required***")
-      if st.button("Dynamic Analysis"):
-         st.write("***Wind Pressure and Forces on Multi-storey building (Gust Factor Approach)***")
-         # Initialize the DataFrame in session state if not already present
-         if "data_df" not in st.session_state:
-            st.session_state.data_df = []
+     
+      if "Dynamic Analysis" not in st.session_state:
+         st.session_state.dynamic_analysis = False
 
-         # Function to add a new row
-         def add_storey():
-            # Append new data and update the DataFrame in session state
+
+      def toggle_dynamic_analysis():
+         st.session_state.dynamic_analysis = True
+
+
+      if st.button("Dynamic Analysis", on_click=toggle_dynamic_analysis):
+         pass  # The state change happens in the callback function
+
+
+      if st.session_state.dynamic_analysis:
+         st.write("***Wind Pressure and Forces on Multi-storey building (Gust Factor Approach)***")
+
+    # Initialize the DataFrame in session state if not already present
+      if "data_df" not in st.session_state:
+        st.session_state.data_df = []
+
+    # Function to add a new row
+      def add_storey():
+        # Append new data and update the DataFrame in session state
             st.session_state.data_df.append({"Storey": st.session_state.Storey, "Height": st.session_state.Height})
-            # Clear the input fields by resetting them
+        # Clear the input fields by resetting them
             st.session_state.Storey = ""
             st.session_state.Height = ""
 
-         # Function to clear all entries
-         def clear_entries():
-            # Clear the DataFrame in session state
-            st.session_state.data_df = []
+    # Function to clear all entries
+      def clear_entries():
+        # Clear the DataFrame in session state
+        st.session_state.data_df = []
 
-         # Use a form to hold inputs and buttons
-         with st.form("entry_form"):
-            # Collect inputs; use session_state to hold current inputs
-            storey = st.text_input("Storey level(from top)", key="Storey", value=st.session_state.get('Storey', ''))
-            storey_height = st.text_input("Storey Height(m)", key="Height", value=st.session_state.get('Height', ''))
-            # Create form buttons for adding and clearing entries
-            submitted = st.form_submit_button("Add Storey", on_click=add_storey)
-            cleared = st.form_submit_button("Clear Entries", on_click=clear_entries)
+    # Use a form to hold inputs and buttons
+      with st.form("entry_form"):
+        # Collect inputs; use session_state to hold current inputs
+        storey = st.text_input("Storey level(from top)", key="Storey", value=st.session_state.get('Storey', ''))
+        storey_height = st.text_input("Storey Height(m)", key="Height", value=st.session_state.get('Height', ''))
+        # Create form buttons for adding and clearing entries
+        submitted = st.form_submit_button("Add Storey", on_click=add_storey)
+        cleared = st.form_submit_button("Clear Entries", on_click=clear_entries)
 
-         # Display the DataFrame if it exists
-         if "data_df" in st.session_state and st.session_state.data_df:
-            data_df = pd.DataFrame(st.session_state.data_df)
-            st.table(data_df)
-            
-            data_df.iloc[:, 1] = data_df.iloc[:, 1].astype(float)
-            storey_data_df=data_df.iloc[:, 1]
-            if isinstance(storey_data_df, pd.Series):
+    # Display the DataFrame if it exists
+      if st.session_state.data_df:
+        data_df = pd.DataFrame(st.session_state.data_df)
+        st.table(data_df)
+        data_df.iloc[:, 1] = data_df.iloc[:, 1].astype(float)
+        storey_data_df=data_df.iloc[:, 1]
+        if isinstance(storey_data_df, pd.Series):
                storey_data_df = storey_data_df.to_frame()
             
                try:
@@ -126,10 +131,7 @@ with tab2:
                   st.write(dyn_pressure_df)                                  
                except Exception as e:
                   st.error(f"An error occurred: {str(e)}")        
-                   
-              
-               
-           
+                
       if st.button("Static Analysis"):    
          st.write("***Wind Pressure and Forces on Multi-storey building (Static Analysis)***")
          st.write("*Calculations are based on given height,average storey height and effective frontal area")
@@ -144,32 +146,9 @@ with tab2:
          st.markdown("***Design wind load,F=Cfxareaxpd***")
          st.markdown("***Variation in design wind speed, design pressure and loads with height***")
          df=wind_loads.wind_data_frame(height,storey_ht,category,vb,k1,k3,k4,Kd,Ka,Kc,Cfx,area)
-         st.table(df)   
-
-         degree = 5  # Degree of the polynomial to fit
-         coefficients = np.polyfit(df['Vz(m/s)'], df['Height'], degree)
-         polynomial = np.poly1d(coefficients)
-
-         # Generate new x values to create a smooth curve
-         Vz_smooth = np.linspace(df['Vz(m/s)'].min(), df['Vz(m/s)'].max(), 500)
-         Height_smooth = polynomial(Vz_smooth)
-
-         plt.figure(figsize=(8, 6))
-         plt.scatter(df['Vz(m/s)'], df['Height'])  # Plot original points
-         plt.plot(Vz_smooth, Height_smooth, 'blue')  # Plot smooth curve
-         plt.xlabel('Vz(m/s)')
-         plt.ylabel('Height')
-         plt.title('Variation in Design Wind Speed with Height')
-         plt.ylim(10, None)
-         plt.grid(True)
-         plt.tight_layout()
-         plt.show()
-
-         # Display the plot in Streamlit
-         st.pyplot(plt)
-         
-
-   
+         st.table(df)
+         fig=wind_loads.plot_static_results(df)
+         st.pyplot(fig)  
 
    else:
       st.markdown("***Dynamic analysis not required***")
@@ -187,29 +166,10 @@ with tab2:
          st.markdown("***Design wind load,F=Cfxareaxpd***")
          st.markdown("***Variation in design wind speed, design pressure and loads with height***")
          df=wind_loads.wind_data_frame(height,storey_ht,category,vb,k1,k3,k4,Kd,Ka,Kc,Cfx,area)
-         st.table(df)  
-         degree = 5  # Degree of the polynomial to fit
-         coefficients = np.polyfit(df['Vz(m/s)'], df['Height'], degree)
-         polynomial = np.poly1d(coefficients)
-
-         # Generate new x values to create a smooth curve
-         Vz_smooth = np.linspace(df['Vz(m/s)'].min(), df['Vz(m/s)'].max(), 500)
-         Height_smooth = polynomial(Vz_smooth)
-
-         plt.figure(figsize=(8, 6))
-         plt.scatter(df['Vz(m/s)'], df['Height'])  # Plot original points
-         plt.plot(Vz_smooth, Height_smooth, 'blue')  # Plot smooth curve
-         plt.xlabel('Vz(m/s)')
-         plt.ylabel('Height')
-         plt.title('Variation in Design Wind Speed with Height')
-         plt.ylim(10, None)
-         plt.grid(True)
-         plt.tight_layout()
-         plt.show()
-
-         # Display the plot in Streamlit
-         st.pyplot(plt) 
-
+         st.table(df) 
+         fig=wind_loads.plot_static_results(df)
+         st.pyplot(fig) 
+         
 
    
 

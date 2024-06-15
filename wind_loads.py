@@ -223,6 +223,28 @@ def wind_data_frame(height:float,storey_height:float,category:str,Vb:float,k1:fl
 
     return new_df
 
+def plot_static_results(df:pd.DataFrame):
+    """
+    Plots the Variation in Design Wind Speed with Height
+    """
+    degree = 5  # Degree of the polynomial to fit
+    coefficients = np.polyfit(df['Vz(m/s)'], df['Height'], degree)
+    polynomial = np.poly1d(coefficients)
+
+         # Generate new x values to create a smooth curve
+    Vz_smooth = np.linspace(df['Vz(m/s)'].min(), df['Vz(m/s)'].max(), 500)
+    Height_smooth = polynomial(Vz_smooth)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(df['Vz(m/s)'], df['Height'])  # Plot original points
+    ax.plot(Vz_smooth, Height_smooth, 'blue')  # Plot smooth curve
+    ax.set_xlabel('Vz(m/s)')
+    ax.set_ylabel('Height')
+    ax.set_title('Variation in Design Wind Speed with Height')
+    ax.set_ylim(10, None)
+    ax.grid(True)
+    return fig
+
 
 def dynamic_wind_pressure(data_df: pd.DataFrame, height: float, category: str, Vb: float, k1: float, k3: float, k4: float,lx:float,
                          ly:float,Tx:float,Ty:float,beta:float,Cfx:float,Cfy:float,):
